@@ -1,0 +1,147 @@
+==================
+Imports, pub fnc, basic return
+==================
+
+import "Module:Foo" as bar
+pub fnc main str {
+  return "hi"
+}
+
+---
+(source_file
+  (import_declaration path: (string) alias: (identifier))
+  (function_declaration
+    name: (identifier)
+    return_type: (str)
+    body: (block
+      (return_statement value: (string)))))
+
+==================
+Nested fnc, if/else if/else, output
+==================
+
+fnc main {
+  fnc inner(a str) str { return a }
+  if x > 0 {
+    output "pos"
+  } else if x < 0 {
+    output "neg"
+  } else {
+    output "zero"
+  }
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (function_declaration
+        name: (identifier)
+        parameters: (parameter_list (parameter name: (identifier) type: (str)))
+        return_type: (str)
+        body: (block (return_statement value: (identifier))))
+      (if_statement
+        condition: (binary_expression left: (identifier) right: (number))
+        consequence: (block (output_statement value: (string)))
+        condition: (binary_expression left: (identifier) right: (number))
+        consequence: (block (output_statement value: (string)))
+        alternative: (block (output_statement value: (string)))))))
+
+==================
+Try, lua raw, catch, bare return, compound assign
+==================
+
+fnc main {
+  try { lua { print(1) } } catch e { }
+  return
+  z += 1
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (try_statement
+        body: (block (lua_statement))
+        error: (identifier)
+        handler: (block))
+      (return_statement)
+      (compound_assign_statement target: (identifier) value: (number)))))
+
+==================
+All loop forms
+==================
+
+fnc main {
+  for i, v in lst { break }
+  for k in 1..n { continue }
+  while t { t = t - 1 }
+  repeat 2 { }
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (for_in_statement
+        index: (identifier)
+        item: (identifier)
+        iterable: (identifier)
+        body: (block (break_statement)))
+      (for_in_statement
+        item: (identifier)
+        iterable: (binary_expression left: (number) right: (identifier))
+        body: (block (continue_statement)))
+      (while_statement
+        condition: (identifier)
+        body: (block (assign_statement target: (identifier) value: (binary_expression left: (identifier) right: (number)))))
+      (repeat_statement count: (number) body: (block)))))
+
+==================
+Assign forms, calls, method with table
+==================
+
+fnc main {
+  a = 1
+  obj.key = 2
+  arr[0] = 3
+  f(1, 2)
+  o:m {a: 1}
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (assign_statement target: (identifier) value: (number))
+      (assign_statement target: (member_expression object: (identifier) property: (identifier)) value: (number))
+      (assign_statement target: (index_expression object: (identifier) index: (number)) value: (number))
+      (expression_statement (call_expression callee: (identifier) arguments: (number) arguments: (number)))
+      (expression_statement (method_call_expression object: (identifier) method: (identifier) table: (map_literal (map_entry key: (identifier) value: (number))))))))
+
+==================
+Comments and raw blocks
+==================
+
+// line
+fnc main {
+  /* block */
+  lua { local x=1 }
+  output { <div>ok</div> }
+  output "plain"
+}
+
+---
+(source_file
+  (line_comment)
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (block_comment)
+      (lua_statement)
+      (output_statement)
+      (output_statement value: (string)))))

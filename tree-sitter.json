@@ -1,0 +1,41 @@
+{
+	"$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+	"grammars": [
+		{
+			"name": "estelle",
+			"camelcase": "Estelle",
+			"title": "Estelle",
+			"scope": "source.estelle",
+			"path": ".",
+			"file-types": ["este"],
+			"injection-regex": "estelle",
+			"highlights": "queries/highlights.scm",
+			"injections": "queries/injections.scm"
+		}
+	],
+	"metadata": {
+		"version": "0.1.0",
+		"license": "MIT",
+		"description": "Tree-sitter grammar for Estelle",
+		"links": {
+			"repository": "https://github.com/your-org/tree-sitter-estelle"
+		},
+		"authors": [
+			{
+				"name": "t7ru",
+				"email": "7@toru.ca"
+			}
+		]
+	},
+	"bindings": {
+		"c": true,
+		"go": false,
+		"java": false,
+		"kotlin": false,
+		"node": false,
+		"python": false,
+		"rust": false,
+		"swift": false,
+		"zig": false
+	}
+}

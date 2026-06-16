@@ -1,0 +1,136 @@
+==================
+Literals list map paren string number bool nil
+==================
+
+fnc main {
+  x = 42
+  y = 3.14
+  b = true
+  n = nil
+  l = [1, 2, 3]
+  m = {a: 1, b: x}
+  z = ("hi")
+  s = "hello"
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (assign_statement target: (identifier) value: (number))
+      (assign_statement target: (identifier) value: (number))
+      (assign_statement target: (identifier) value: (true))
+      (assign_statement target: (identifier) value: (nil))
+      (assign_statement target: (identifier) value: (list_literal (number) (number) (number)))
+      (assign_statement target: (identifier) value: (map_literal (map_entry key: (identifier) value: (number)) (map_entry key: (identifier) value: (identifier))))
+      (assign_statement target: (identifier) value: (string))
+      (assign_statement target: (identifier) value: (string)))))
+
+==================
+Calls, method (both forms), member, index, chain
+==================
+
+fnc main {
+  f(1, 2)
+  obj:method(3)
+  obj:method { k: 4 }
+  a.b.c
+  arr[ i + 1 ]
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (expression_statement (call_expression callee: (identifier) arguments: (number) arguments: (number)))
+      (expression_statement (method_call_expression object: (identifier) method: (identifier) arguments: (number)))
+      (expression_statement (method_call_expression object: (identifier) method: (identifier) table: (map_literal (map_entry key: (identifier) value: (number)))))
+      (expression_statement (member_expression object: (member_expression object: (identifier) property: (identifier)) property: (identifier)))
+      (expression_statement (index_expression object: (identifier) index: (binary_expression left: (identifier) right: (number)))))))
+
+==================
+Lambdas
+==================
+
+fnc main {
+  f = () => 1
+  g = (x) => x + 1
+  h = (a, b) => a * b
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (assign_statement target: (identifier) value: (lambda_expression body: (number)))
+      (assign_statement target: (identifier) value: (lambda_expression (identifier) body: (binary_expression left: (identifier) right: (number))))
+      (assign_statement target: (identifier) value: (lambda_expression (identifier) (identifier) body: (binary_expression left: (identifier) right: (identifier)))))))
+
+==================
+Unary, coerce (as), binaries, pipe
+==================
+
+fnc main {
+  a = not b
+  c = -d
+  e = v as num
+  f = 1 + 2 * 3
+  g = 1 .. 10
+  p = data | trim
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (assign_statement target: (identifier) value: (unary_expression operand: (identifier)))
+      (assign_statement target: (identifier) value: (unary_expression operand: (identifier)))
+      (assign_statement target: (identifier) value: (coerce_expression expr: (identifier) type: (num)))
+      (assign_statement target: (identifier) value: (binary_expression left: (number) right: (binary_expression left: (number) right: (number))))
+      (assign_statement target: (identifier) value: (binary_expression left: (number) right: (number)))
+      (assign_statement target: (identifier) value: (pipe_expression value: (identifier) function: (identifier))))))
+
+==================
+Parameters optional, types on fn
+==================
+
+fnc priv(x num?) num {
+  return x
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    parameters: (parameter_list (parameter name: (identifier) type: (num)))
+    return_type: (num)
+    body: (block (return_statement value: (identifier)))))
+
+==================
+String interpolation (Phase 2)
+==================
+
+fnc main {
+  a = "hi ${name}"
+  b = 'x ${y.z} ${1 + 2}'
+  c = "${foo("bar")}"
+}
+
+---
+(source_file
+  (function_declaration
+    name: (identifier)
+    body: (block
+      (assign_statement
+        target: (identifier)
+        value: (string (interpolation (identifier))))
+      (assign_statement
+        target: (identifier)
+        value: (string (interpolation (member_expression object: (identifier) property: (identifier))) (interpolation (binary_expression left: (number) right: (number)))))
+      (assign_statement
+        target: (identifier)
+        value: (string (interpolation (call_expression callee: (identifier) arguments: (string))))))))

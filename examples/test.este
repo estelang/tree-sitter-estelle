@@ -1,0 +1,23 @@
+import "Module:Foo" as bar
+pub fnc main str {
+	// comment
+	x = 1
+	y = "hi ${world}"
+	if x > 0 { output "p" } else if x < 0 { output "n" } else { output "z" }
+	for i, v in lst { break }
+	for k in 1..n { continue }
+	while t { t = t - 1 }
+	repeat 2 { }
+	try { lua { print(1) } } catch e { }
+	return
+	z += 1
+	f(1,2)
+	o:m {a:1}
+	l = [1,2]
+	m = {k: v}
+	lam = (a) => a + 1
+	c = v as num
+	p = a | trim
+	return (1)
+}
+fnc priv(x num?) num { return -x }
