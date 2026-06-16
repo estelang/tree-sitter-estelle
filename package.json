@@ -5,10 +5,7 @@
 	"description": "Tree-sitter grammar for Estelle",
 	"repository": "https://github.com/estelang/tree-sitter-estelle",
 	"license": "MIT",
-	"main": "bindings/node",
-	"types": "bindings/node",
 	"scripts": {
-		"build": "tree-sitter generate && node-gyp build",
 		"test": "tree-sitter test",
 		"parse": "tree-sitter parse",
 		"generate": "tree-sitter generate"
@@ -24,9 +21,6 @@
 			"injections": "queries/injections.scm"
 		}
 	],
-	"dependencies": {
-		"nan": "^2.27.0"
-	},
 	"devDependencies": {
 		"tree-sitter-cli": "^0.26.9"
 	}
