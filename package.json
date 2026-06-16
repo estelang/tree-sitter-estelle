@@ -6,6 +6,7 @@
 	"repository": "https://github.com/estelang/tree-sitter-estelle",
 	"license": "MIT",
 	"scripts": {
+		"build": "tree-sitter build --wasm",
 		"test": "tree-sitter test",
 		"parse": "tree-sitter parse",
 		"generate": "tree-sitter generate"
