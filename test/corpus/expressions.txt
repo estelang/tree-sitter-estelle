@@ -111,7 +111,7 @@ fnc priv(x num?) num {
     body: (block (return_statement value: (identifier)))))
 
 ==================
-String interpolation (Phase 2)
+String interpolation
 ==================
 
 fnc main {

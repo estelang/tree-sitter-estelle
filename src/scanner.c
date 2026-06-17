@@ -71,45 +71,49 @@ static void skip_whitespace(TSLexer *lexer) {
     lexer->advance(lexer, true);
 }
 
-static bool scan_raw_block(TSLexer *lexer) {
+static bool scan_raw_block(TSLexer *lexer, TokenType block_type) {
   int depth = 1;
   while (lexer->lookahead != 0) {
     char c = lexer->lookahead;
-    lexer->advance(lexer, false);
-    if (c == '{')
-      depth++;
-    else if (c == '}') {
-      depth--;
-      if (depth == 0) {
-        lexer->result_symbol = LUA_BLOCK; // caller may override to OUTPUT_BLOCK
-        return true;
-      }
-    } else if (c == '"' || c == '\'') {
-      char q = c;
-      while (lexer->lookahead != 0) {
-        char sc = lexer->lookahead;
-        lexer->advance(lexer, false);
-        if (sc == '\\') {
-          if (lexer->lookahead != 0)
-            lexer->advance(lexer, false);
-          continue;
-        }
-        if (sc == q)
-          break;
-      }
-    } else if (c == '/' && lexer->lookahead == '/') {
-      while (lexer->lookahead != 0 && lexer->lookahead != '\n')
-        lexer->advance(lexer, false);
-    } else if (c == '/' && lexer->lookahead == '*') {
+    if (c == '{' || c == '}' || c == '"' || c == '\'' || c == '/') {
       lexer->advance(lexer, false);
-      while (lexer->lookahead != 0) {
-        char sc = lexer->lookahead;
-        lexer->advance(lexer, false);
-        if (sc == '*' && lexer->lookahead == '/') {
+      if (c == '{')
+        depth++;
+      else if (c == '}') {
+        depth--;
+        if (depth == 0) {
+          lexer->result_symbol = block_type;
+          return true;
+        }
+      } else if (c == '"' || c == '\'') {
+        char q = c;
+        while (lexer->lookahead != 0) {
+          char sc = lexer->lookahead;
           lexer->advance(lexer, false);
-          break;
+          if (sc == '\\') {
+            if (lexer->lookahead != 0)
+              lexer->advance(lexer, false);
+            continue;
+          }
+          if (sc == q)
+            break;
+        }
+      } else if (c == '/' && lexer->lookahead == '/') {
+        while (lexer->lookahead != 0 && lexer->lookahead != '\n')
+          lexer->advance(lexer, false);
+      } else if (c == '/' && lexer->lookahead == '*') {
+        lexer->advance(lexer, false);
+        while (lexer->lookahead != 0) {
+          char sc = lexer->lookahead;
+          lexer->advance(lexer, false);
+          if (sc == '*' && lexer->lookahead == '/') {
+            lexer->advance(lexer, false);
+            break;
+          }
         }
       }
+    } else {
+      lexer->advance(lexer, false);
     }
   }
   return false;
@@ -165,14 +169,13 @@ bool tree_sitter_estelle_external_scanner_scan(void *payload, TSLexer *lexer,
         return true;
       }
 
-      if (valid_symbols[STRING_CONTENT] && lexer->lookahead != 0) {
-        bool advanced = false;
-        while (lexer->lookahead != 0 && lexer->lookahead != current_quote &&
-               !(lexer->lookahead == '$') && lexer->lookahead != '\\') {
-          lexer->advance(lexer, false);
-          advanced = true;
-        }
-        if (advanced) {
+      if (valid_symbols[STRING_CONTENT]) {
+        char la = lexer->lookahead;
+        if (la != 0 && la != current_quote && la != '$' && la != '\\') {
+          do {
+            lexer->advance(lexer, false);
+            la = lexer->lookahead;
+          } while (la != 0 && la != current_quote && la != '$' && la != '\\');
           lexer->result_symbol = STRING_CONTENT;
           return true;
         }
@@ -200,10 +203,7 @@ bool tree_sitter_estelle_external_scanner_scan(void *payload, TSLexer *lexer,
     skip_whitespace(lexer);
     if (lexer->lookahead == '{') {
       lexer->advance(lexer, false);
-      bool ok = scan_raw_block(lexer);
-      if (ok)
-        lexer->result_symbol = LUA_BLOCK;
-      return ok;
+      return scan_raw_block(lexer, LUA_BLOCK);
     }
   }
 
@@ -211,13 +211,8 @@ bool tree_sitter_estelle_external_scanner_scan(void *payload, TSLexer *lexer,
     skip_whitespace(lexer);
     if (lexer->lookahead == '{') {
       lexer->advance(lexer, false);
-      // output blocks may contain ${...}
-      // let injections.scm handle any ${} as text
-      // rather than Estelle expressions
-      bool ok = scan_raw_block(lexer);
-      if (ok)
-        lexer->result_symbol = OUTPUT_BLOCK;
-      return ok;
+      // output blocks may contain ${...}; injections.scm handles them as text
+      return scan_raw_block(lexer, OUTPUT_BLOCK);
     }
   }
 
